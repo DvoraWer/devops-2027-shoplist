@@ -9,6 +9,13 @@ Browser → frontend (Nginx :80) → backend (Flask :5000) → postgres (Postgre
                                → stats (Node.js :3000) ───→ backend
 ```
 
+**מה האפליקציה יודעת לעשות:** להוסיף מוצר עם מחיר, כמות וקטגוריה; לערוך ולמחוק; לסמן מה כבר נקנה; לחפש ולמיין; ולהציג סטטיסטיקה לפי קטגוריה. למעלה בדף יש נורית לכל סרוויס, ירוקה כשהוא עונה ואדומה כשלא.
+
+| סרוויס | כתובות (API) |
+|---|---|
+| backend | `GET /health`, `GET /categories`, `GET /products`, `POST /products`, `PATCH /products/<id>`, `DELETE /products/<id>` |
+| stats | `GET /health`, `GET /stats` |
+
 ## לקבל את הקוד: fork ואז clone
 
 כל אחת עובדת על עותק משלה של הריפו, ב-GitHub שלה. ככה אפשר לשמור בו את העבודה, ולהשתמש בו בהמשך הקורס (CI/CD בשיעורים 7–8).

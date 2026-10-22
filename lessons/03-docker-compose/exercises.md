@@ -34,14 +34,14 @@
    ```shell
    docker compose exec postgres psql -U shopuser -d shoplist -c "SELECT * FROM products;"
    ```
-4. למחוק מוצר אחד בדפדפן, ולהריץ שוב את הפקודה.
+4. לסמן מוצר אחד כנקנה, ולמחוק מוצר אחר. להריץ שוב את הפקודה.
 
 **מה רואים כאן:**
 `docker compose exec` מריץ פקודה בתוך service שרץ, כמו `docker exec` משיעור 2, רק לפי שם ה-service. `psql` הוא הכלי של PostgreSQL, והוא כבר בתוך ה-image. הנתונים שהוספתן בדפדפן עברו דרך Nginx, ה-backend, ועד הטבלה.
 
 > **ב-Git Bash:** אם מופיע `the input device is not a TTY`, להוסיף `winpty` בהתחלה, או להוסיף `-T` אחרי `exec`.
 
-**בדיקה:** שלוש שורות בטבלה, ואחרי המחיקה שתיים.
+**בדיקה:** שלוש שורות בטבלה. אחרי השינויים: שתי שורות, ובאחת מהן `bought` הוא `t` (true).
 
 ---
 
@@ -88,6 +88,72 @@ Compose קורא אוטומטית קובץ בשם `.env` מאותה תיקייה
 
 ---
 
+## תרגיל 5 — multi-stage: לבנות בשלב אחד, להריץ בשלב אחר (בינוני)
+
+**הרקע:**
+באתרים אמיתיים הקבצים שהדפדפן מקבל לא נכתבים ביד. כלי בנייה (למשל Vite או webpack) מכין אותם, והכלי הזה רץ על Node.js. אבל כדי **להגיש** את הקבצים צריך רק Nginx. אין סיבה ש-Node, וכל כלי הבנייה, יישבו ב-image שרץ בשרת.
+
+ב-`app/frontend` יש קובץ חדש, `build.js`. זה כלי בנייה קטן: הוא מעתיק את הקבצים לתיקייה `dist`, מוחק הערות מ-`app.js`, ומוסיף לתחתית הדף את זמן הבנייה. אין לכן Node במחשב, וזה לא משנה: הבנייה תרוץ בתוך container.
+
+**המשימה:**
+1. ליצור בתיקייה `app/frontend` קובץ בשם `Dockerfile.multistage`:
+   ```dockerfile
+   # שלב 1: בנייה, עם Node
+   FROM node:24-alpine AS build
+   WORKDIR /app
+   COPY build.js index.html style.css app.js ./
+   RUN node build.js
+
+   # שלב 2: הרצה, עם Nginx בלבד
+   FROM nginx:1.30-alpine
+   COPY --from=build /app/dist/ /usr/share/nginx/html/
+   COPY nginx.conf /etc/nginx/conf.d/default.conf
+   EXPOSE 80
+   ```
+2. לבנות, **מהתיקייה הראשית של הריפו**. הדגל `-f` אומר באיזה Dockerfile להשתמש:
+   ```shell
+   docker build -f app/frontend/Dockerfile.multistage -t shoplist-frontend:multi app/frontend
+   ```
+   בפלט של ה-build רואים את שני השלבים, ואת השורה `node build.js` עם רשימת הקבצים.
+3. לבנות רק את השלב הראשון, עם `--target`:
+   ```shell
+   docker build -f app/frontend/Dockerfile.multistage --target build -t shoplist-frontend:build-stage app/frontend
+   ```
+4. להשוות גדלים, ולרשום אותם:
+   ```shell
+   docker images shoplist-frontend
+   ```
+5. לבדוק שאין Node ב-image הסופי:
+   ```shell
+   docker run --rm shoplist-frontend:build-stage node --version
+   docker run --rm shoplist-frontend:multi node --version
+   ```
+   הראשון מדפיס גרסה. השני נכשל עם הודעה ש-`node` לא נמצא.
+6. להשתמש ב-Dockerfile החדש ב-Compose. ב-`docker/docker-compose.yml`, ב-service `frontend`:
+   ```yaml
+   frontend:
+     build:
+       context: ../app/frontend
+       dockerfile: Dockerfile.multistage
+   ```
+   ואז, מהתיקייה `docker`:
+   ```shell
+   docker compose up -d --build frontend
+   ```
+   לרענן את הדפדפן עם Ctrl+F5. בתחתית הדף מופיעה שורת `Build:` עם התאריך והשעה.
+
+**מה רואים כאן:**
+ב-Dockerfile יש שני `FROM`, וכל אחד מתחיל שלב חדש מאפס. `AS build` נותן שם לשלב הראשון, ו-`COPY --from=build` לוקח ממנו **רק** את התיקייה `dist`. כל השאר, כולל Node עצמו, נשאר מאחור ולא נכנס ל-image הסופי. לכן הוא קטן יותר, מהיר יותר להורדה, ויש בו פחות תוכנה שאפשר לתקוף.
+
+**שאלות:**
+1. כמה MB חסכתן? (מתוך הפלט של שלב 4)
+2. למה `node --version` נכשל ב-image הסופי, אם `node build.js` רץ בזמן ה-build?
+3. ב-Dockerfile הרגיל של ה-frontend אין שלב בנייה. מתי כדאי לעבור ל-multi-stage?
+
+> **קיבלתן "Welcome to nginx!"?** השורה `COPY nginx.conf` חסרה בשלב השני. כל שלב מתחיל מאפס, גם ההגדרות.
+
+---
+
 ## תרגיל בונוס — מוצר אחד לפי מספר (רשות)
 
 **המשימה:**
@@ -97,6 +163,8 @@ Compose קורא אוטומטית קובץ בשם `.env` מאותה תיקייה
 GET /products/<id>   →  מחזיר מוצר אחד כ-JSON
                      →  מחזיר 404 עם {"error": "not found"} אם אין כזה
 ```
+
+**רמז:** להעתיק את `get_products` ולשנות אותה. בקוד כבר יש `COLUMNS` (רשימת העמודות) ו-`to_json` (הופכת שורה ל-JSON). השאילתה: `SELECT ... FROM products WHERE id = %s`, ו-`cur.fetchone()` מחזיר שורה אחת, או `None` אם אין.
 
 ואז, מהתיקייה `docker`:
 

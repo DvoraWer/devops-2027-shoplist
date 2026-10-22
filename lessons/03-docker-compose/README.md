@@ -8,6 +8,7 @@
 - איך סרוויסים מוצאים זה את זה לפי השם
 - volumes, ומה עושה `down -v`
 - healthcheck: לחכות שמסד הנתונים באמת מוכן
+- multi-stage build: image סופי קטן, בלי כלי הבנייה
 
 ## התרגילים
 
@@ -15,8 +16,9 @@
 2. להציץ למסד הנתונים עם `psql`
 3. בלי healthcheck
 4. סיסמאות מחוץ לקובץ, עם `.env`
-5. בונוס: מוצר אחד לפי מספר
-6. תרגול פקודות: [commands-practice.md](commands-practice.md)
+5. multi-stage: Dockerfile שבונה עם Node ומריץ עם Nginx
+6. בונוס: מוצר אחד לפי מספר
+7. תרגול פקודות: [commands-practice.md](commands-practice.md)
 
 ## שיעורי בית
 

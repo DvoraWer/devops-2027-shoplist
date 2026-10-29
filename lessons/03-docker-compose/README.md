@@ -1,5 +1,7 @@
 # שיעור 3: Docker Compose, Nginx ושמירת נתונים
 
+> **שימו לב:** בשיעור 3 למדנו את המושגים (רשתות, volumes, multi-stage) והכרנו את קובץ ה-Compose. **את הקבצים כותבות ומריצות בשיעור 4**, יחד בכיתה. החומר כאן הוא לקריאה וחזרה. **שיעורי הבית והבוחן של שיעור 3 לא להגשה.** שיעורי הבית הבאים: [שיעור 4](../04-compose-networks-volumes/).
+
 ## מה לומדות בשיעור
 
 - Nginx כ-reverse proxy: כתובת אחת לדפדפן, וכל בקשה לסרוויס הנכון
@@ -8,7 +10,7 @@
 - איך סרוויסים מוצאים זה את זה לפי השם
 - volumes, ומה עושה `down -v`
 - healthcheck: לחכות שמסד הנתונים באמת מוכן
-- multi-stage build: image סופי קטן, בלי כלי הבנייה
+- multi-stage build: image סופי קטן, בלי כלי הבנייה (תרגול בשיעורי הבית של שיעור 4)
 
 ## התרגילים
 
@@ -16,13 +18,12 @@
 2. להציץ למסד הנתונים עם `psql`
 3. בלי healthcheck
 4. סיסמאות מחוץ לקובץ, עם `.env`
-5. multi-stage: Dockerfile שבונה עם Node ומריץ עם Nginx
-6. בונוס: מוצר אחד לפי מספר
-7. תרגול פקודות: [commands-practice.md](commands-practice.md)
+5. בונוס: מוצר אחד לפי מספר
+6. תרגול פקודות: [commands-practice.md](commands-practice.md)
 
 ## שיעורי בית
 
-[homework.md](homework.md): Compose ל-greeter בשתי שפות, והגשת הבוחן. ישירות ב-GitHub, בלי התקנות בבית.
+לא להגשה. שיעורי הבית הבאים הם של [שיעור 4](../04-compose-networks-volumes/homework.md).
 
 ## הקבצים בתיקייה
 

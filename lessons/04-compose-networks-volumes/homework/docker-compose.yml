@@ -16,7 +16,8 @@ services:
 
   backend:
     build:
-      context: ../../../app/backend
+      context: ../../../app/frontend
+      dockerfile: Dockerfile.multistage
     environment:
       DB_HOST: postgres
       DB_NAME: shoplist

@@ -5,7 +5,7 @@ WORKDIR /app
 #מעתיקים את קובץ התלויות שמכיל את הספריות להתקנה
 COPY requirements.txt .
 # מתקינים את התלויות הנדרשות להפעלת הסרוויס
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
 # מעתיקים את קובץ הקוד של הסרוויס לתוך הקונטיינר
 COPY app.py .
 # מציינים שהסרוויס מאזין לפורט 8000 בתוך הקונטיינר
